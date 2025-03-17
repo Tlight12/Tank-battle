@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1742234300 source:d:\codeblock\game\first project\main.cpp
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
+	<bits/stdc++.h>
+
