@@ -1,12 +1,17 @@
 #include "EnemyTank.h"
 #include <cstdlib>
 #include <algorithm>
+#include <cmath>
 using namespace std;
 EnemyTank::EnemyTank(int startX, int startY) {
     moveDelay = 10;
     shootDelay = 5;
     x = startX;
     y = startY;
+    texture = nullptr;
+    exploding = false;
+    explodeTimer = 0;
+    explosionTexture = nullptr;
     rect = { x, y, TILE_SIZE, TILE_SIZE };
     dirX = 0;
     dirY = 1;
@@ -59,10 +64,37 @@ void EnemyTank::updateBullets() {
     bullets.erase(remove_if(bullets.begin(), bullets.end(),
                                  [](Bullet &b) { return !b.active; }), bullets.end());
 }
+void EnemyTank::loadTexture(SDL_Renderer* renderer, const char* path) {
+    SDL_Surface* surface = IMG_Load(path);
+    if (surface) {
+        texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
+    }
+}
+
+double EnemyTank::getAngle() const {
+    if (dirX == 0 && dirY == 0) return 0.0;
+    double angle = atan2(dirY, dirX) * 180.0 / M_PI;
+    return angle + 90.0;
+}
 
 void EnemyTank::render(SDL_Renderer* renderer) {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &rect);
+    if (exploding) {
+        if (explosionTexture) {
+            SDL_RenderCopy(renderer, explosionTexture, nullptr, &rect);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 255, 128, 0, 255);
+            SDL_RenderFillRect(renderer, &rect);
+        }
+        return;
+    }
+    if (!active) return;
+    if (texture) {
+        SDL_RenderCopyEx(renderer, texture, nullptr, &rect, getAngle(), nullptr, SDL_FLIP_NONE);
+    } else {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &rect);
+    }
     for (auto &bullet : bullets) {
         bullet.render(renderer);
     }

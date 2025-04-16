@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="first project" />
+		<Option title="Tank battle" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -32,18 +32,18 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="Bullet.cpp" />
-		<Unit filename="Bullet.h" />
-		<Unit filename="EnemyTank.cpp" />
-		<Unit filename="EnemyTank.h" />
-		<Unit filename="Game.cpp" />
-		<Unit filename="Game.h" />
-		<Unit filename="PlayerTank.cpp" />
-		<Unit filename="PlayerTank.h" />
-		<Unit filename="Wall.cpp" />
-		<Unit filename="Wall.h" />
-		<Unit filename="constants.h" />
-		<Unit filename="main.cpp" />
+		<Unit filename="src/Bullet.cpp" />
+		<Unit filename="src/Bullet.h" />
+		<Unit filename="src/EnemyTank.cpp" />
+		<Unit filename="src/EnemyTank.h" />
+		<Unit filename="src/Game.cpp" />
+		<Unit filename="src/Game.h" />
+		<Unit filename="src/PlayerTank.cpp" />
+		<Unit filename="src/PlayerTank.h" />
+		<Unit filename="src/Wall.cpp" />
+		<Unit filename="src/Wall.h" />
+		<Unit filename="src/constants.h" />
+		<Unit filename="src/main.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

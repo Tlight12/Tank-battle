@@ -1,0 +1,67 @@
+# depslib dependency file v1.0
+1744801127 source:d:\codeblock\game\tank battle\src\bullet.cpp
+	"Bullet.h"
+
+1743344040 d:\codeblock\game\tank battle\src\bullet.h
+	<SDL.h>
+	"constants.h"
+
+1743344040 d:\codeblock\game\tank battle\src\constants.h
+
+1744798746 source:d:\codeblock\game\tank battle\src\enemytank.cpp
+	"EnemyTank.h"
+	<cstdlib>
+	<algorithm>
+	<cmath>
+
+1744798725 d:\codeblock\game\tank battle\src\enemytank.h
+	<vector>
+	<SDL.h>
+	<SDL_image.h>
+	"Bullet.h"
+	"Wall.h"
+
+1744798590 d:\codeblock\game\tank battle\src\wall.h
+	<SDL.h>
+	"Constants.h"
+
+1744799289 source:d:\codeblock\game\tank battle\src\game.cpp
+	"Game.h"
+	"Constants.h"
+	<iostream>
+	<ctime>
+	<cstdlib>
+	<algorithm>
+	<SDL_image.h>
+	<SDL_ttf.h>
+	<SDL_mixer.h>
+
+1744798590 d:\codeblock\game\tank battle\src\game.h
+	<vector>
+	"Wall.h"
+	"PlayerTank.h"
+	"EnemyTank.h"
+	<SDL.h>
+	<SDL_mixer.h>
+
+1744799617 d:\codeblock\game\tank battle\src\playertank.h
+	<vector>
+	<SDL.h>
+	<SDL_image.h>
+	"Bullet.h"
+	"Wall.h"
+
+1743344040 source:d:\codeblock\game\tank battle\src\main.cpp
+	"Game.h"
+
+1744798590 source:d:\codeblock\game\tank battle\src\playertank.cpp
+	"PlayerTank.h"
+	"Constants.h"
+	<cmath>
+	<algorithm>
+	<SDL_image.h>
+
+1744798641 source:d:\codeblock\game\tank battle\src\wall.cpp
+	"Wall.h"
+	<SDL_image.h>
+
