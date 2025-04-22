@@ -2,11 +2,15 @@
 #define GAME_H
 
 #include <vector>
-#include "Wall.h"
-#include "PlayerTank.h"
-#include "EnemyTank.h"
 #include <SDL.h>
+#include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
+#include "Wall.h"
+#include "Constants.h"
+#include "Bullet.h"
+#include "EnemyTank.h"
+#include "PlayerTank.h"
 using namespace std;
 class Game {
 public:

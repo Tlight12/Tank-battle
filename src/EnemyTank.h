@@ -6,6 +6,10 @@
 #include <SDL_image.h>
 #include "Bullet.h"
 #include "Wall.h"
+#include "PlayerTank.h"
+#include "Constants.h"
+#include <cmath>
+
 using namespace std;
 class EnemyTank {
 public:
@@ -21,7 +25,8 @@ public:
     SDL_Texture* explosionTexture;
 
     EnemyTank(int startX, int startY);
-    void move(const vector<Wall>& walls);
+    void move(const std::vector<Wall>& walls, const std::vector<EnemyTank>& enemies,
+              const PlayerTank& player, const PlayerTank& player2);
     void shoot();
     void updateBullets();
     void loadTexture(SDL_Renderer* renderer, const char* path);

@@ -8,24 +8,29 @@
 
 1743344040 d:\codeblock\game\tank battle\src\constants.h
 
-1744798746 source:d:\codeblock\game\tank battle\src\enemytank.cpp
+1744837394 source:d:\codeblock\game\tank battle\src\enemytank.cpp
 	"EnemyTank.h"
-	<cstdlib>
 	<algorithm>
+	<cstdlib>
 	<cmath>
+	<SDL.h>
+	<SDL_image.h>
 
-1744798725 d:\codeblock\game\tank battle\src\enemytank.h
+1744837394 d:\codeblock\game\tank battle\src\enemytank.h
 	<vector>
 	<SDL.h>
 	<SDL_image.h>
 	"Bullet.h"
 	"Wall.h"
+	"PlayerTank.h"
+	"Constants.h"
+	<cmath>
 
 1744798590 d:\codeblock\game\tank battle\src\wall.h
 	<SDL.h>
 	"Constants.h"
 
-1744799289 source:d:\codeblock\game\tank battle\src\game.cpp
+1745351168 source:d:\codeblock\game\tank battle\src\game.cpp
 	"Game.h"
 	"Constants.h"
 	<iostream>
@@ -36,29 +41,36 @@
 	<SDL_ttf.h>
 	<SDL_mixer.h>
 
-1744798590 d:\codeblock\game\tank battle\src\game.h
+1744837394 d:\codeblock\game\tank battle\src\game.h
 	<vector>
-	"Wall.h"
-	"PlayerTank.h"
-	"EnemyTank.h"
 	<SDL.h>
+	<SDL_image.h>
 	<SDL_mixer.h>
+	<SDL_ttf.h>
+	"Wall.h"
+	"Constants.h"
+	"Bullet.h"
+	"EnemyTank.h"
+	"PlayerTank.h"
 
-1744799617 d:\codeblock\game\tank battle\src\playertank.h
+1744837394 d:\codeblock\game\tank battle\src\playertank.h
 	<vector>
 	<SDL.h>
 	<SDL_image.h>
 	"Bullet.h"
 	"Wall.h"
+	"Constants.h"
 
 1743344040 source:d:\codeblock\game\tank battle\src\main.cpp
 	"Game.h"
 
-1744798590 source:d:\codeblock\game\tank battle\src\playertank.cpp
+1744837394 source:d:\codeblock\game\tank battle\src\playertank.cpp
 	"PlayerTank.h"
-	"Constants.h"
+	"EnemyTank.h"
+	"Bullet.h"
 	<cmath>
 	<algorithm>
+	<SDL.h>
 	<SDL_image.h>
 
 1744798641 source:d:\codeblock\game\tank battle\src\wall.cpp

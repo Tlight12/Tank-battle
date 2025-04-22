@@ -1,7 +1,9 @@
 #include "PlayerTank.h"
-#include "Constants.h"
+#include "EnemyTank.h"
+#include "Bullet.h"
 #include <cmath>
 #include <algorithm>
+#include <SDL.h>
 #include <SDL_image.h>
 using namespace std;
 PlayerTank::PlayerTank(){
@@ -30,22 +32,30 @@ PlayerTank::PlayerTank(int startX, int startY){
     rect = { x, y, TILE_SIZE, TILE_SIZE };
 }
 
-void PlayerTank::move(int dx, int dy, const vector<Wall>& walls) {
+void PlayerTank::move(int dx, int dy, const std::vector<Wall>& walls,
+                      const std::vector<EnemyTank>& enemies, const PlayerTank& otherPlayer)
+{
     int newX = x + dx;
     int newY = y + dy;
     dirX = dx;
     dirY = dy;
-    if (!isAlive) return;
-
+    if (!isAlive)
+        return;
     SDL_Rect newRect = { newX, newY, TILE_SIZE, TILE_SIZE };
+
     for (const auto& wall : walls) {
         if (wall.active && SDL_HasIntersection(&newRect, &wall.rect))
             return;
     }
+    for (const auto& enemy : enemies) {
+        if (enemy.active && SDL_HasIntersection(&newRect, &enemy.rect))
+            return;
+    }
+    if (otherPlayer.isAlive && SDL_HasIntersection(&newRect, &otherPlayer.rect))
+        return;
 
     if (newX >= TILE_SIZE && newX <= SCREEN_WIDTH - TILE_SIZE * 2 &&
-        newY >= TILE_SIZE && newY <= SCREEN_HEIGHT - TILE_SIZE * 2)
-    {
+        newY >= TILE_SIZE && newY <= SCREEN_HEIGHT - TILE_SIZE * 2) {
         x = newX;
         y = newY;
         rect.x = x;

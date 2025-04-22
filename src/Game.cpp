@@ -9,7 +9,7 @@
 #include <SDL_mixer.h>
 using namespace std;
 Game::Game(){
-    enemyNumber = 5;
+    enemyNumber = 7;
     running = true;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << endl;
@@ -99,18 +99,20 @@ void Game::handleEvents() {
             running = false;
         } else if (event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.sym) {
-            // Player 1 controls
-            case SDLK_UP:    player.move(0, -10, walls); break;
-            case SDLK_DOWN:  player.move(0, 10, walls); break;
-            case SDLK_LEFT:  player.move(-10, 0, walls); break;
-            case SDLK_RIGHT: player.move(10, 0, walls); break;
-            case SDLK_KP_6:  player.shoot(); break;
-            // Player 2 controls
-            case SDLK_w:     player2.move(0, -10, walls); break;
-            case SDLK_s:     player2.move(0, 10, walls); break;
-            case SDLK_a:     player2.move(-10, 0, walls); break;
-            case SDLK_d:     player2.move(10, 0, walls); break;
-            case SDLK_SPACE: player2.shoot(); break;
+                // Player 1 controls
+                case SDLK_UP:    player.move(0, -10, walls, enemies, player2); break;
+                case SDLK_DOWN:  player.move(0, 10, walls, enemies, player2); break;
+                case SDLK_LEFT:  player.move(-10, 0, walls, enemies, player2); break;
+                case SDLK_RIGHT: player.move(10, 0, walls, enemies, player2); break;
+                case SDLK_KP_6:  player.shoot(); break;
+                // Player 2 controls
+                case SDLK_w:     player2.move(0, -10, walls, enemies, player); break;
+                case SDLK_s:     player2.move(0, 10, walls, enemies, player); break;
+                case SDLK_a:     player2.move(-10, 0, walls, enemies, player); break;
+                case SDLK_d:     player2.move(10, 0, walls, enemies, player); break;
+                case SDLK_SPACE: player2.shoot(); break;
+                // Escape key to quit
+                case SDLK_ESCAPE: running = false; break;
             }
         }
     }
@@ -149,14 +151,12 @@ void Game::update() {
     player2.updateBullets();
 
     for (auto& enemy : enemies) {
-        enemy.move(walls);
+        enemy.move(walls, enemies, player, player2);
         enemy.updateBullets();
-        if (rand() % 100 < 2) {
+        if (rand() % 100 < 2)
             enemy.shoot();
-        }
     }
 
-    // Player and enemy bullet collisions with walls
     for (auto& enemy : enemies) {
         for (auto& bullet : enemy.bullets) {
             for (auto& wall : walls) {
@@ -172,67 +172,6 @@ void Game::update() {
                 }
             }
         }
-    }
-    for (auto& bullet : player.bullets) {
-        for (auto& wall : walls) {
-            if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
-                wall.active = false;
-                wall.exploding = true;
-                wall.explodeTimer = 15;
-                bullet.active = false;
-                if (wall_explosionSound){
-                    Mix_PlayChannel(-1, wall_explosionSound, 0);
-                }
-                break;
-            }
-        }
-    }
-    for (auto& bullet : player.bullets) {
-        for (auto& enemy : enemies) {
-            if (enemy.active && SDL_HasIntersection(&bullet.rect, &enemy.rect)) {
-                bullet.active = false;
-                enemy.exploding = true;
-                enemy.explodeTimer = 20;
-                enemy.active = false;
-                if (explosionSound){
-                    Mix_PlayChannel(-1, explosionSound, 0);
-                }
-            }
-        }
-    }
-    for (auto& bullet : player2.bullets) {
-        for (auto& wall : walls) {
-            if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
-                wall.active = false;
-                wall.exploding = true;
-                wall.explodeTimer = 15;
-                bullet.active = false;
-                if (wall_explosionSound){
-                    Mix_PlayChannel(-1, wall_explosionSound, 0);
-                }
-                break;
-            }
-        }
-    }
-    for (auto& bullet : player2.bullets) {
-        for (auto& enemy : enemies) {
-            if (enemy.active && SDL_HasIntersection(&bullet.rect, &enemy.rect)) {
-                bullet.active = false;
-                enemy.exploding = true;
-                enemy.explodeTimer = 20;
-                enemy.active = false;
-                if (explosionSound){
-                    Mix_PlayChannel(-1, explosionSound, 0);
-                }
-            }
-        }
-    }
-
-    enemies.erase(remove_if(enemies.begin(), enemies.end(),
-        [] (EnemyTank &e) { return !e.active && !e.exploding; }), enemies.end());
-
-    if (enemies.empty()) {
-        running = false;
     }
     for (auto& enemy : enemies) {
         for (auto& bullet : enemy.bullets) {
@@ -256,6 +195,87 @@ void Game::update() {
             }
         }
     }
+    for (auto& bullet : player.bullets) {
+        for (auto& wall : walls) {
+            if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
+                wall.active = false;
+                wall.exploding = true;
+                wall.explodeTimer = 15;
+                bullet.active = false;
+                if (wall_explosionSound){
+                    Mix_PlayChannel(-1, wall_explosionSound, 0);
+                }
+                break;
+            }
+        }
+    }
+    for (auto& bullet : player.bullets) {
+        for (auto& enemy : enemies) {
+            if (enemy.active && SDL_HasIntersection(&bullet.rect, &enemy.rect)) {
+                bullet.active = false;
+                enemy.exploding = true;
+                enemy.explodeTimer = 20;
+                enemy.active = false;
+                if (explosionSound){
+                    Mix_PlayChannel(-1, explosionSound, 0);
+                }
+            }
+        }
+    }
+    for (auto& bullet : player.bullets) {
+          if (player2.isAlive && SDL_HasIntersection(&bullet.rect, &player2.rect)) {
+              bullet.active = false;
+              player2.exploding = true;
+              player2.explodeTimer = 20;
+              player2.isAlive = false;
+              if (explosionSound) Mix_PlayChannel(-1, explosionSound, 0);
+          }
+      }
+    for (auto& bullet : player2.bullets) {
+        for (auto& wall : walls) {
+            if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
+                wall.active = false;
+                wall.exploding = true;
+                wall.explodeTimer = 15;
+                bullet.active = false;
+                if (wall_explosionSound){
+                    Mix_PlayChannel(-1, wall_explosionSound, 0);
+                }
+                break;
+            }
+        }
+    }
+    for (auto& bullet : player2.bullets) {
+        for (auto& enemy : enemies) {
+            if (enemy.active && SDL_HasIntersection(&bullet.rect, &enemy.rect)) {
+                bullet.active = false;
+                enemy.exploding = true;
+                enemy.explodeTimer = 20;
+                enemy.active = false;
+                if (explosionSound){
+                    Mix_PlayChannel(-1, explosionSound, 0);
+                }
+            }
+        }
+    }
+    for (auto& bullet : player2.bullets) {
+        if (player.isAlive && SDL_HasIntersection(&bullet.rect, &player.rect)) {
+            bullet.active = false;
+            player.exploding = true;
+            player.explodeTimer = 20;
+            player.isAlive = false;
+            if (explosionSound) Mix_PlayChannel(-1, explosionSound, 0);
+        }
+    }
+
+
+    enemies.erase(remove_if(enemies.begin(), enemies.end(),
+        [] (EnemyTank &e) { return !e.active && !e.exploding; }), enemies.end());
+
+    if (enemies.empty()) {
+        running = false;
+    }
+
     if (!player.isAlive && !player2.isAlive) {
         running = false;
         return;

@@ -1,7 +1,9 @@
 #include "EnemyTank.h"
-#include <cstdlib>
 #include <algorithm>
+#include <cstdlib>
 #include <cmath>
+#include <SDL.h>
+#include <SDL_image.h>
 using namespace std;
 EnemyTank::EnemyTank(int startX, int startY) {
     moveDelay = 10;
@@ -18,30 +20,43 @@ EnemyTank::EnemyTank(int startX, int startY) {
     active = true;
 }
 
-void EnemyTank::move(const vector<Wall>& walls) {
+void EnemyTank::move(const vector<Wall>& walls, const vector<EnemyTank>& enemies, const PlayerTank& player, const PlayerTank& player2) {
     if (--moveDelay > 0) return;
     moveDelay = 10;
     int r = rand() % 4;
-    if (r == 0) { // lên
-        dirX = 0;
-        dirY = -10;
-    } else if (r == 1) { // xuống
-        dirX = 0;
-        dirY = 10;
-    } else if (r == 2) { // trái
-        dirY = 0;
-        dirX = -10;
-    } else if (r == 3) { // phải
-        dirY = 0;
-        dirX = 10;
+    if (r == 0) { // Up
+        this->dirX = 0;
+        this->dirY = -10;
     }
-    int newX = x + dirX;
-    int newY = y + dirY;
+    else if (r == 1) { // Down
+        this->dirX = 0;
+        this->dirY = 10;
+    }
+    else if (r == 2) { // Left
+        this->dirY = 0;
+        this->dirX = -10;
+    }
+    else if (r == 3) { // Right
+        this->dirY = 0;
+        this->dirX = 10;
+    }
+    int newX = x + this->dirX;
+    int newY = y + this->dirY;
+
     SDL_Rect newRect = { newX, newY, TILE_SIZE, TILE_SIZE };
     for (const auto& wall : walls) {
-        if (wall.active && SDL_HasIntersection(&newRect, &wall.rect))
+        if (wall.active && SDL_HasIntersection(&newRect, &wall.rect)) {
             return;
+        }
     }
+    for (const auto& enemy : enemies) {
+        if (&enemy != this && enemy.active && SDL_HasIntersection(&newRect, &enemy.rect)) {
+            return;
+        }
+    }
+    if (player.isAlive && SDL_HasIntersection(&newRect, &player.rect)) return;
+    if (player2.isAlive && SDL_HasIntersection(&newRect, &player2.rect)) return;
+
     if (newX >= TILE_SIZE && newX <= SCREEN_WIDTH - TILE_SIZE * 2 &&
         newY >= TILE_SIZE && newY <= SCREEN_HEIGHT - TILE_SIZE * 2) {
         x = newX;
