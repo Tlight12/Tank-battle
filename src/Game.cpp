@@ -11,6 +11,11 @@ using namespace std;
 Game::Game(){
     enemyNumber = 7;
     running = true;
+    gameOver = false;
+    playerWon = false;
+    menu = true;
+    menuSelection = 0;
+    singlePlayerMode = false;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << endl;
         running = false;
@@ -33,6 +38,10 @@ Game::Game(){
     if (TTF_Init() == -1) {
         cerr << "SDL_ttf could not initialize! SDL_Error: " << TTF_GetError() << endl;
         running = false;
+    }
+    font = TTF_OpenFont("font/arial.ttf", 48);
+    if (!font) {
+        cerr << "Failed to load font! SDL_Error: " << TTF_GetError() << endl;
     }
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
         cerr << "SDL_mixer could not initialize! SDL_Error: " << Mix_GetError() << endl;
@@ -89,7 +98,65 @@ void Game::render() {
     for (auto &enemy : enemies) {
         enemy.render(renderer);
     }
+    if (gameOver) {
+        int centerX = SCREEN_WIDTH / 2 - 180;
+        if (playerWon) {
+            renderText("YOU WIN!", centerX, SCREEN_HEIGHT / 3, 64, false);
+        } else {
+            renderText("YOU LOSE!", centerX, SCREEN_HEIGHT / 3, 64, false);
+        }
+        renderText("Press F5 to restart or ESC to return menu!", centerX - 140, SCREEN_HEIGHT / 2, 32, false);
+    }
     SDL_RenderPresent(renderer);
+}
+void Game::renderMenu() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    renderText("TANK BATTLE", SCREEN_WIDTH/2, 150, 80, true);
+
+    SDL_Color normalColor = {255, 255, 255, 255};
+    SDL_Color selectedColor = {255, 255, 0, 255};
+
+    if (menuSelection == 0) {
+        renderTextColor(" ONE PLAYER", SCREEN_WIDTH/2, 300, 40, true, selectedColor);
+    } else {
+        renderTextColor(" ONE PLAYER", SCREEN_WIDTH/2, 300, 40, true, normalColor);
+    }
+
+    if (menuSelection == 1) {
+        renderTextColor(" TWO PLAYERS", SCREEN_WIDTH/2, 380, 40, true, selectedColor);
+    } else {
+        renderTextColor(" TWO PLAYERS", SCREEN_WIDTH/2, 380, 40, true, normalColor);
+    }
+    SDL_RenderPresent(renderer);
+}
+
+void Game::renderTextColor(const char* message, int x, int y, int size, bool center, SDL_Color color) {
+    if (!font) return;
+
+    TTF_Font* sizedFont = TTF_OpenFont("font/arial.ttf", size);
+    if (!sizedFont) return;
+
+    SDL_Surface* textSurface = TTF_RenderText_Solid(sizedFont, message, color);
+    if (textSurface) {
+        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        if (textTexture) {
+            SDL_Rect renderRect = {x, y, textSurface->w, textSurface->h};
+            if (center) {
+                renderRect.x = x - textSurface->w / 2;
+            }
+            SDL_RenderCopy(renderer, textTexture, NULL, &renderRect);
+            SDL_DestroyTexture(textTexture);
+        }
+        SDL_FreeSurface(textSurface);
+    }
+    TTF_CloseFont(sizedFont);
+}
+
+void Game::renderText(const char* message, int x, int y, int size , bool center ) {
+    SDL_Color textColor = {255, 255, 255, 255};
+    renderTextColor(message, x, y, size, center, textColor);
 }
 
 void Game::handleEvents() {
@@ -98,6 +165,22 @@ void Game::handleEvents() {
         if (event.type == SDL_QUIT) {
             running = false;
         } else if (event.type == SDL_KEYDOWN) {
+            if (menu) {
+                switch (event.key.keysym.sym) {
+                    case SDLK_UP:
+                        menuSelection = 0;
+                        break;
+                    case SDLK_DOWN:
+                        menuSelection = 1;
+                        break;
+                    case SDLK_RETURN:
+                        menu = false;
+                        singlePlayerMode = (menuSelection == 0);
+                        resetGame();
+                        break;
+                }
+            }
+            else {
             switch (event.key.keysym.sym) {
                 // Player 1 controls
                 case SDLK_UP:    player.move(0, -10, walls, enemies, player2); break;
@@ -106,13 +189,19 @@ void Game::handleEvents() {
                 case SDLK_RIGHT: player.move(10, 0, walls, enemies, player2); break;
                 case SDLK_KP_6:  player.shoot(); break;
                 // Player 2 controls
-                case SDLK_w:     player2.move(0, -10, walls, enemies, player); break;
-                case SDLK_s:     player2.move(0, 10, walls, enemies, player); break;
-                case SDLK_a:     player2.move(-10, 0, walls, enemies, player); break;
-                case SDLK_d:     player2.move(10, 0, walls, enemies, player); break;
-                case SDLK_SPACE: player2.shoot(); break;
-                // Escape key to quit
-                case SDLK_ESCAPE: running = false; break;
+                case SDLK_w: if (!singlePlayerMode)    player2.move(0, -10, walls, enemies, player); break;
+                case SDLK_s: if (!singlePlayerMode)    player2.move(0, 10, walls, enemies, player); break;
+                case SDLK_a: if (!singlePlayerMode)    player2.move(-10, 0, walls, enemies, player); break;
+                case SDLK_d: if (!singlePlayerMode)    player2.move(10, 0, walls, enemies, player); break;
+                case SDLK_SPACE: if (!singlePlayerMode) player2.shoot(); break;
+                // Others
+                case SDLK_ESCAPE: menu = true; break;
+                case SDLK_F5:
+                if (gameOver) {
+                    resetGame();
+                }
+                break;
+                }
             }
         }
     }
@@ -272,13 +361,16 @@ void Game::update() {
     enemies.erase(remove_if(enemies.begin(), enemies.end(),
         [] (EnemyTank &e) { return !e.active && !e.exploding; }), enemies.end());
 
+    // Win
     if (enemies.empty()) {
-        running = false;
+        gameOver = true;
+        playerWon = true;
     }
 
-    if (!player.isAlive && !player2.isAlive) {
-        running = false;
-        return;
+    // Lose
+    if (!player.isAlive && (!player2.isAlive || singlePlayerMode)) {
+        gameOver = true;
+        playerWon = false;
     }
     if (player.exploding) {
         player.explodeTimer--;
@@ -312,7 +404,39 @@ void Game::update() {
         }
     }
 }
+void Game::resetGame() {
+    walls.clear();
+    enemies.clear();
 
+    player = PlayerTank(((MAP_WIDTH - 1) / 2) * TILE_SIZE,(MAP_HEIGHT - 2) * TILE_SIZE);
+
+    if (!singlePlayerMode) {
+        player2 = PlayerTank(((MAP_WIDTH - 5) / 2) * TILE_SIZE,(MAP_HEIGHT - 2) * TILE_SIZE);
+        player2.loadTexture(renderer, "img/2.png");
+        player2.explosionTexture = IMG_LoadTexture(renderer, "img/explosion.png");
+        player2.isAlive = true;
+    } else {
+        player2.isAlive = false;
+    }
+
+    player.loadTexture(renderer, "img/1.png");
+    player.explosionTexture = IMG_LoadTexture(renderer, "img/explosion.png");
+
+    generateWalls();
+    for (auto& wall : walls) {
+        wall.loadTexture(renderer, "img/wall.png");
+        wall.explosionTexture = IMG_LoadTexture(renderer, "img/wall_explosion.png");
+    }
+
+    spawnEnemies();
+    for (auto& enemy : enemies) {
+        enemy.loadTexture(renderer, "img/enemy.png");
+        enemy.explosionTexture = IMG_LoadTexture(renderer, "img/explosion.png");
+    }
+
+    gameOver = false;
+    playerWon = false;
+}
 void Game::run() {
     Uint32 frameStart;
     int frameTime;
@@ -322,8 +446,13 @@ void Game::run() {
         frameStart = SDL_GetTicks();
 
         handleEvents();
-        update();
-        render();
+
+        if (menu) {
+            renderMenu();
+        } else {
+            update();
+            render();
+        }
 
         frameTime = SDL_GetTicks() - frameStart;
         if (frameTime < FRAME_DELAY) {
@@ -348,10 +477,12 @@ Game::~Game() {
     if (backgroundMusic) Mix_FreeMusic(backgroundMusic);
     if (explosionSound) Mix_FreeChunk(explosionSound);
     if (wall_explosionSound) Mix_FreeChunk(wall_explosionSound);
+    if (font) TTF_CloseFont(font);
     Mix_CloseAudio();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     Mix_Quit();
     IMG_Quit();
     SDL_Quit();
+    TTF_Quit();
 }

@@ -25,13 +25,23 @@ public:
     Mix_Music* backgroundMusic;
     Mix_Chunk* explosionSound;
     Mix_Chunk* wall_explosionSound;
+    TTF_Font* font;
+    bool gameOver;
+    bool playerWon;
+    bool menu;
+    int menuSelection;
+    bool singlePlayerMode;
 
     Game();
     void render();
+    void renderMenu();
+    void renderTextColor(const char* message, int x, int y, int size, bool center, SDL_Color color);
+    void renderText(const char* message, int x, int y, int size, bool center);
     void handleEvents();
     void spawnEnemies();
     void generateWalls();
     void update();
+    void resetGame();
     void run();
     ~Game();
 };
